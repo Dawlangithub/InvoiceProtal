@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+html {
+    font-family: 'Inter var', ui-sans-serif, system-ui;
+  }
