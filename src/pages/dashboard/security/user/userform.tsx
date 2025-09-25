@@ -104,7 +104,6 @@ export default function UserForm() {
             key: "IsExcute",
             label: "Is Execute",
             type: "boolean",
-            required: true,
         },
 
     ];

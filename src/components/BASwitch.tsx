@@ -17,9 +17,9 @@ export default function BASwitch(props: propsType) {
 
     return (
         <BABox className={`${className}`}>
-            <div className="flex items-center justify-left">
+            <div>
                 {label && (
-                    <div className={`text-xs font-medium text-gray-700 mr-20 ${labelClass}`}>
+                    <div className={`text-xs font-medium text-gray-700 mr-20 mb-2 ${labelClass}`}>
                         {label}
                         {required && <span className="text-red-500 mr-3">*</span>}
                         <span className='ml-2'>{value ? "" : ""}</span>

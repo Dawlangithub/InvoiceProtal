@@ -41,7 +41,6 @@ import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { invoiceRunService, invoiceExecuteService } from "../config/apiservices";
 import { LuFilterX } from "react-icons/lu";
-import CardView from "./CardView";
 import { IoMdDownload } from "react-icons/io";
 import instance from "../config/apimethods";
 import BACheckbox from "./BACheckbox";
@@ -117,7 +116,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     showDateRangePicker,
     disableExport,
   } = props;
-    console.log("🚀  ~ BASetupGrid.tsx ~ BASetupGrid ~ controller: ", controller);
+  console.log("🚀  ~ BASetupGrid.tsx ~ BASetupGrid ~ controller: ", controller);
   const [listData, setListData] = useState<any>([]);
   const [openModal, setOpenModal] = useState(false);
   const [model, setModel] = useState<any>({});
@@ -559,102 +558,114 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
         disableNav
       >
         <BABox className="mt-3">
-          <BABox className={"h-[calc(100vh-13rem)] overflow-auto"}>
+          <BABox className={"h-[calc(100vh-14rem)] overflow-auto"}>
             {extraBody}
             {loader ? (
               <BALoader />
             ) : (<>
-              {isMobile ? <CardView cols={cols} listData={listData} /> : (
-                <BABox className="hidden md:block">
-                  <table className="min-w-full divide-y rounded-lg overflow-hidden divide-gray-200">
-                    <thead style={{ backgroundColor: primary, color: 'white' }} className="bg-primary">
-                      <tr className="relative">
-                        {hasCheckboxColumn && (
-                          <th className="px-3 text-center">
-                            <BACheckbox
-                              onChange={(e: any) => toggleSelectAll(e.target.checked)}
-                              checked={allSelected}
-                              isMultiple={selectedRows.length > 0 && !allSelected}
-                            />
-                          </th>
-                        )}
-                        <th className="px-3 text-center"></th>
-                        {conditionalColumns && conditionalColumns.length > 0
-                          ? conditionalColumns.map((col: any, index: number) => (
-                            <th
-                              className={`px-6 py-3 text-center text-xs font-medium text-plain  tracking-wider ${col.className ? col.className : ""
-                                }`}
-                              key={index}
-                            >
-                              {col.label}
-                            </th>
-                          ))
-                          : null}
-                        {colsWithoutCheckbox.map((col: any, index: number) => (
+              <BABox className="hidden md:block">
+                <table className="min-w-full divide-y rounded-lg overflow-hidden divide-gray-200">
+                  <thead style={{ backgroundColor: primary, color: 'white' }} className="bg-primary">
+                    <tr className="relative">
+                      {hasCheckboxColumn && (
+                        <th className="px-3 text-center">
+                          <BACheckbox
+                            onChange={(e: any) => toggleSelectAll(e.target.checked)}
+                            checked={allSelected}
+                            isMultiple={selectedRows.length > 0 && !allSelected}
+                          />
+                        </th>
+                      )}
+                      <th className="px-3 text-center"></th>
+                      {conditionalColumns && conditionalColumns.length > 0
+                        ? conditionalColumns.map((col: any, index: number) => (
                           <th
+                            className={`px-6 py-3 text-center text-xs font-medium text-plain  tracking-wider ${col.className ? col.className : ""
+                              }`}
                             key={index}
-                            className={classNames(`px-6 py-3 transform text-center text-xs font-medium text-plain tracking-wider relative z-0 ${col.className ? col.className : ""}
-                              }`)}
                           >
                             {col.label}
-                            {col.HeaderField ? col.HeaderField() : ""}
                           </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 h-full">
-                      <tr>
-                        {hasCheckboxColumn && <td className="px-3"></td>}
-                        <td className="px-3">
-                          <BABox className="text-center">
-
-                            {Object.entries(gridSearchObj).length > 0 && (
-                              <BAIconButton
-                                onClick={() => {
-                                  setGridSearchObj({});
-                                  getData(null, {});
-                                }}
-                                icon={<LuFilterX />}
-                              />
-                            )}
-                          </BABox>
-                        </td>
-
-                        {colsWithoutCheckbox.map((col: any, index: number) => (
-                          <td
-                            key={index}
-                            className={classNames(`text-left  p-1 text-xs font-medium text-plain tracking-wider ${col.className ? col.className : ""}
+                        ))
+                        : null}
+                      {colsWithoutCheckbox.map((col: any, index: number) => (
+                        <th
+                          key={index}
+                          className={classNames(`px-6 py-3 transform text-center text-xs font-medium text-plain tracking-wider relative z-0 ${col.className ? col.className : ""}
                               }`)}
-                          >
-                            {col.type === "boolean" ?
-                              <BASelect
-                                onChange={(e: any) => {
-                                  gridSearchObj[col.key] = e;
+                        >
+                          {col.label}
+                          {col.HeaderField ? col.HeaderField() : ""}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200 h-full">
+                    <tr>
+                      {hasCheckboxColumn && <td className="px-3"></td>}
+                      <td className="px-3">
+                        <BABox className="text-center">
+
+                          {Object.entries(gridSearchObj).length > 0 && (
+                            <BAIconButton
+                              onClick={() => {
+                                setGridSearchObj({});
+                                getData(null, {});
+                              }}
+                              icon={<LuFilterX />}
+                            />
+                          )}
+                        </BABox>
+                      </td>
+
+                      {colsWithoutCheckbox.map((col: any, index: number) => (
+                        <td
+                          key={index}
+                          className={classNames(`text-left  p-1 text-xs font-medium text-plain tracking-wider ${col.className ? col.className : ""}
+                              }`)}
+                        >
+                          {col.type === "boolean" ?
+                            <BASelect
+                              onChange={(e: any) => {
+                                gridSearchObj[col.key] = e;
+                                setGridSearchObj({ ...gridSearchObj });
+                                let obj = { ...gridSearchObj }
+                                obj[col.key] = e
+                                getData(null, { ...obj });
+                              }}
+                              options={[
+                                { value: '1', label: 'Success' },
+                                { value: '0', label: 'Failed' },
+                                { value: '2', label: 'Pending' }
+                              ]}
+                              label=""
+                              value={gridSearchObj[col.key]}
+                            /> : col.type === "date" ?
+
+                              <>
+                                {!col.hideFilter && <BADate onChange={(e: any) => {
+                                  const formatted = formatDateDMY(e);
+                                  gridSearchObj[col.key] = formatted;
                                   setGridSearchObj({ ...gridSearchObj });
                                   let obj = { ...gridSearchObj }
-                                  obj[col.key] = e
+                                  obj[col.key] = formatted;
                                   getData(null, { ...obj });
+                                }} label={""} />}
+                              </>
+                              : col.type === "number" ? <BANumberInput
+                                onKeyDown={(event: any) => {
+                                  if (event.key === "Enter") {
+                                    getData();
+                                  }
                                 }}
-                                options={[
-                                  { value: '1', label: 'Success' },
-                                  { value: '0', label: 'Failed' },
-                                  { value: '2', label: 'Pending' }
-                                ]}
-                                label=""
                                 value={gridSearchObj[col.key]}
-                              /> : col.type === "date" ?
-
-                                <>
-                                  {!col.hideFilter && <BADate onChange={(e: any) => {
-                                    const formatted = formatDateDMY(e);
-                                    gridSearchObj[col.key] = formatted;
-                                    setGridSearchObj({ ...gridSearchObj });
-                                    let obj = { ...gridSearchObj }
-                                    obj[col.key] = formatted;
-                                    getData(null, { ...obj });
-                                  }} label={""} />}
-                                </>
-                                : col.type === "number" ? <BANumberInput
+                                onChange={(ev: any) => {
+                                  gridSearchObj[col.key] = ev.target.value;
+                                  setGridSearchObj({ ...gridSearchObj });
+                                }}
+                                label={""}
+                              /> :
+                                <BAinput
                                   onKeyDown={(event: any) => {
                                     if (event.key === "Enter") {
                                       getData();
@@ -666,156 +677,142 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                     setGridSearchObj({ ...gridSearchObj });
                                   }}
                                   label={""}
-                                /> :
-                                  <BAinput
-                                    onKeyDown={(event: any) => {
-                                      if (event.key === "Enter") {
-                                        getData();
-                                      }
-                                    }}
-                                    value={gridSearchObj[col.key]}
-                                    onChange={(ev: any) => {
-                                      gridSearchObj[col.key] = ev.target.value;
-                                      setGridSearchObj({ ...gridSearchObj });
-                                    }}
-                                    label={""}
-                                  />}
-                          </td>
-                        ))}
-                      </tr>
-                      {listData.length > 0 ? (
-                        listData.map((row: any, rowIndex: number) => (
-                          <tr
-                            key={rowIndex}
-                            className={"transition relative"}
-                            // style={{height:'12px'}}
-                            style={{
-                              backgroundColor: rowIndex % 2 === 1 ? "" : "#edf0f4",
-                            }}
-                          >
-                            {hasCheckboxColumn && (
-                              <td className="p-3">
-                                <BACheckbox
-                                  checked={row.isSelected || false}
-                                  onChange={(e: any) => selectRow(row, e.target.checked)}
-                                />
-                              </td>
-                            )}
-                            <td className="px-1 whitespace-nowrap  text-sm text-gray-900">
-                              <BABox className="flex items-center">
-                                {!disableEdit && (
-                                  <EditOutlined onClick={() => {
-                                    editClick(row);
-                                    if (modelGetter) modelGetter({ ...row })
-                                  }} className="text-black hover:text-[#DB052C] m-1 text-lg hover:scale-125" />
-
-                                )}
-                                {!disableDelete && (<Popconfirm
-                                  title="Delete the task"
-                                  description="Are you sure to delete this task?"
-                                  onConfirm={() => deleteRecord(row.Id)}
-                                  okText="Yes"
-                                  cancelText="No"
-                                >
-                                  <DeleteOutlined onClick={() => {
-                                  }} className="text-black hover:text-[#DB052C] m-1 text-lg hover:scale-125" />
-                                </Popconfirm>
-                                )}
-                                {controller === 'transaction' && (
-                                  <div className="flex gap-1">
-                                    <BAIconButton onClick={() => {
-                                      setInfoRow(row);
-                                      setInfoModal(true);
-                                    }} icon={<QrcodeOutlined style={{ fontSize: '13px' }} />} />
-                                    <BAIconButton onClick={() => {
-                                      let ReportUrl = `${instance.defaults.baseURL}transaction/download?invoiceNo=${row.InvoiceNo}`;
-                                      window.open(ReportUrl, '_blank');
-                                    }} icon={<IoMdDownload style={{ fontSize: '13px' }} />} />
-                                  </div>
-                                )}
-                                {
-                                  controller === 'setup' && (
-                                    <Popconfirm
-                                      title="Are you sure to run invoice?"
-                                      description=""
-                                      onConfirm={() => {
-                                        invoiceRunService.GetAll().then((res: any) => {
-                                          message.success(res.Message);
-                                        }).catch((err: any) => {
-                                          message.error(err?.error);
-                                        });
-                                      }}
-                                      okText="Yes"
-                                      cancelText="No"
-                                    >
-                                      <SettingOutlined className="text-black m-1 text-lg hover:scale-125" />
-                                    </Popconfirm>
-                                  )
-                                }
-                              </BABox>
+                                />}
+                        </td>
+                      ))}
+                    </tr>
+                    {listData.length > 0 ? (
+                      listData.map((row: any, rowIndex: number) => (
+                        <tr
+                          key={rowIndex}
+                          className={"transition relative"}
+                          // style={{height:'12px'}}
+                          style={{
+                            backgroundColor: rowIndex % 2 === 1 ? "" : "#edf0f4",
+                          }}
+                        >
+                          {hasCheckboxColumn && (
+                            <td className="p-3">
+                              <BACheckbox
+                                checked={row.isSelected || false}
+                                onChange={(e: any) => selectRow(row, e.target.checked)}
+                              />
                             </td>
-                            {colsWithoutCheckbox.map((col: any, colIndex: number) => (
-                              <td
-                                key={colIndex}
-                                style={{ lineHeight: "0.8" }}
-                                className={classNames(
-                                  `p-3  whitespace-nowrap text-xs text-gray-900 relative ${col.className ? col.className : ""}`,
-                                )}
+                          )}
+                          <td className="px-1 whitespace-nowrap  text-sm text-gray-900">
+                            <BABox className="flex items-center">
+                              {!disableEdit && (
+                                <EditOutlined onClick={() => {
+                                  editClick(row);
+                                  if (modelGetter) modelGetter({ ...row })
+                                }} className="text-black hover:text-[#DB052C] m-1 text-lg hover:scale-125" />
+
+                              )}
+                              {!disableDelete && (<Popconfirm
+                                title="Delete the task"
+                                description="Are you sure to delete this task?"
+                                onConfirm={() => deleteRecord(row.Id)}
+                                okText="Yes"
+                                cancelText="No"
                               >
-                                {col.displayField ? (
-                                  col.displayField(row)
-                                ) : col.type === "status" ? (
-                                  row[col.key] ? <CheckOutlined className="text-lg text-[#DB052C]" /> : <CloseOutlined className="text-lg text-[grey]" />
-                                ) : col.type === "number" ? (
-                                  <BABox className="text-end">{formattedNumber(row[col.key])}</BABox>
+                                <DeleteOutlined onClick={() => {
+                                }} className="text-black hover:text-[#DB052C] m-1 text-lg hover:scale-125" />
+                              </Popconfirm>
+                              )}
+                              {controller === 'transaction' && (
+                                <div className="flex gap-1">
+                                  <BAIconButton onClick={() => {
+                                    setInfoRow(row);
+                                    setInfoModal(true);
+                                  }} icon={<QrcodeOutlined style={{ fontSize: '13px' }} />} />
+                                  <BAIconButton onClick={() => {
+                                    let ReportUrl = `${instance.defaults.baseURL}transaction/download?invoiceNo=${row.InvoiceNo}`;
+                                    window.open(ReportUrl, '_blank');
+                                  }} icon={<IoMdDownload style={{ fontSize: '13px' }} />} />
+                                </div>
+                              )}
+                              {
+                                controller === 'setup' && (
+                                  <Popconfirm
+                                    title="Are you sure to run invoice?"
+                                    description=""
+                                    onConfirm={() => {
+                                      invoiceRunService.GetAll().then((res: any) => {
+                                        message.success(res.Message);
+                                      }).catch((err: any) => {
+                                        message.error(err?.error);
+                                      });
+                                    }}
+                                    okText="Yes"
+                                    cancelText="No"
+                                  >
+                                    <SettingOutlined className="text-black m-1 text-lg hover:scale-125" />
+                                  </Popconfirm>
                                 )
-                                  : col.type === "date" ? (
-                                    <span className="text-center block" >{formatDateDMY(row[col.key])}</span>
-                                  ) : col.type === "checkbox" ? (
-                                    null
-                                  ) : (
-                                    (() => {
-                                      const isFbrKey = String(col.key).toLowerCase() === "fbr";
-                                      if (isFbrKey) {
-                                        const toBool = (v: any) => v === true || v === 1 || String(v).toLowerCase() === "true";
-                                        const isFbr = toBool(row["FBR"]);
-                                        const isProcessed = toBool(row["IsProcessed"]);
-                                        let text = "--"; let cls = "bg-gray-100 text-gray-600";
-                                        if (isProcessed && isFbr) { text = "Success"; cls = "bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"; }
-                                        else if (isProcessed && !isFbr) { text = "Failed"; cls = "bg-red-100 text-red-700 hover:bg-red-600 hover:text-white"; }
-                                        else { text = "Pending"; cls = "bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white"; }
-                                        return (<span className={cls + " px-2 py-0.5 rounded-full text-xs"}>{text}</span>);
-                                      }
-                                      return row[col.key];
-                                    })()
-                                  )}
-                              </td>
-                            ))}
-                            {conditionalColumns && conditionalColumns.length > 0
-                              ? conditionalColumns.map((col: any, index: number) => (
-                                <td
-                                  className="px-5 whitespace-nowrap text-sm text-gray-900"
-                                  key={index}
-                                >
-                                  {col.displayField(row)}
-                                </td>
-                              ))
-                              : null}
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={cols.length + (conditionalColumns?.length || 0) + 1} className="text-center py-4">
-                            <BABox className="flex justify-center w-full">
-                              <img src={nodata} width={250} alt="" />
+                              }
                             </BABox>
                           </td>
+                          {colsWithoutCheckbox.map((col: any, colIndex: number) => (
+                            <td
+                              key={colIndex}
+                              style={{ lineHeight: "0.8" }}
+                              className={classNames(
+                                `p-3  whitespace-nowrap text-xs text-gray-900 relative ${col.className ? col.className : ""}`,
+                              )}
+                            >
+                              {col.displayField ? (
+                                col.displayField(row)
+                              ) : col.type === "status" ? (
+                                row[col.key] ? <CheckOutlined className="text-lg text-[#DB052C]" /> : <CloseOutlined className="text-lg text-[grey]" />
+                              ) : col.type === "number" ? (
+                                <BABox className="text-end">{formattedNumber(row[col.key])}</BABox>
+                              )
+                                : col.type === "date" ? (
+                                  <span className="text-center block" >{formatDateDMY(row[col.key])}</span>
+                                ) : col.type === "checkbox" ? (
+                                  null
+                                ) : (
+                                  (() => {
+                                    const isFbrKey = String(col.key).toLowerCase() === "fbr";
+                                    if (isFbrKey) {
+                                      const toBool = (v: any) => v === true || v === 1 || String(v).toLowerCase() === "true";
+                                      const isFbr = toBool(row["FBR"]);
+                                      const isProcessed = toBool(row["IsProcessed"]);
+                                      let text = "--"; let cls = "bg-gray-100 text-gray-600";
+                                      if (isProcessed && isFbr) { text = "Success"; cls = "bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"; }
+                                      else if (isProcessed && !isFbr) { text = "Failed"; cls = "bg-red-100 text-red-700 hover:bg-red-600 hover:text-white"; }
+                                      else { text = "Pending"; cls = "bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white"; }
+                                      return (<span className={cls + " px-2 py-0.5 rounded-full text-xs"}>{text}</span>);
+                                    }
+                                    return row[col.key];
+                                  })()
+                                )}
+                            </td>
+                          ))}
+                          {conditionalColumns && conditionalColumns.length > 0
+                            ? conditionalColumns.map((col: any, index: number) => (
+                              <td
+                                className="px-5 whitespace-nowrap text-sm text-gray-900"
+                                key={index}
+                              >
+                                {col.displayField(row)}
+                              </td>
+                            ))
+                            : null}
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </BABox>
-              )}
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={cols.length + (conditionalColumns?.length || 0) + 1} className="text-center py-4">
+                          <BABox className="flex justify-center w-full">
+                            <img src={nodata} width={250} alt="" />
+                          </BABox>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </BABox>
 
               <BABox className="md:hidden block">
                 <BABox className="flex flex-nowrap overflow-x-auto snap-x snap-mandatory h-full">

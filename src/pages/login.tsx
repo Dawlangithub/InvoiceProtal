@@ -43,9 +43,9 @@ export default function Login() {
   }, []);
 
   return (
-    <BABox className="h-screen w-screen flex py-5 px-10">
+    <BABox className="h-screen w-screen flex">
       {/* Left side (form) */}
-      <BABox className="w-full md:w-1/3 flex flex-col justify-center items-center bg-white p-13 rounded-l-xl">
+      <BABox className="w-full md:w-1/3 flex flex-col justify-center items-center bg-white rounded-l-xl">
 
         <div className="w-full max-w-xs">
 
@@ -62,7 +62,6 @@ export default function Login() {
                 <CloseOutlined onClick={() => setError("")} />
               </div>
             </div>
-
           )}
 
           <form onSubmit={loginUser} className="mt-4">
