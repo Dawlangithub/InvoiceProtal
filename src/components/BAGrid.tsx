@@ -193,7 +193,7 @@ export default function BAGrid(props: propsType) {
                 {cols && Array.isArray(cols) && cols.map((col: any, colIndex: number) => (
                   <td
                     key={colIndex}
-                    className={`p-1 whitespace-nowrap text-sm border border-[lightgrey] text-gray-900 ${col.className ? col.className : ""
+                    className={`p-1 whitespace-nowrap text-sm text-gray-900 ${col.className ? col.className : ""
                       }`}
                   >
                     {col.displayField
