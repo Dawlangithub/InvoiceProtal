@@ -6,7 +6,8 @@ const instance = axios.create({
     // baseURL:    `http://192.168.26.104:8055/api/`,
     // baseURL: `http://202.92.0.77:8001/api/`,
     // baseURL: `http://pafwebapi.finosys-sbs.com/api/`,
-    baseURL: `http://192.168.19.97:3100/api`,
+    // baseURL: `http://192.168.19.97:3100/api`,
+    baseURL: `http://10.92.0.30:3100/api`,
 });
 
 

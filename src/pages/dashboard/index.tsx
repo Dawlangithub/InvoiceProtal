@@ -6,8 +6,6 @@ import {
   CaretRightOutlined,
   MenuOutlined,
   AppstoreFilled,
-  ScanOutlined,
-  IdcardOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
@@ -18,6 +16,8 @@ import { IoExitOutline } from "react-icons/io5";
 import profile from "../../assets/profile.png";
 import User from "./security/user/user";
 import UserForm from "./security/user/userform";
+import { TbFileInvoice } from "react-icons/tb";
+import { LuLogs } from "react-icons/lu";
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
@@ -44,14 +44,14 @@ export default function DashboardScreen() {
       icon: <AppstoreFilled style={{ fontSize: "1.0em" }} />,
       items: [
         {
-          label: "Invoice",
+          label: "Print Invoice",
           route: "/invoice",
-          icon: <ScanOutlined style={{ fontSize: "1.0em" }} />,
+          icon: <TbFileInvoice style={{ fontSize: "1.0em" }} />,
         },
         {
-          label: "Logs",
+          label: "Invoice Logs",
           route: "/logs",
-          icon: <IdcardOutlined style={{ fontSize: "1.0em" }} />,
+          icon: <LuLogs style={{ fontSize: "1.0em" }} />,
         },
       ]
     },

@@ -41,6 +41,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LuFilterX } from "react-icons/lu";
 import instance from "../config/apimethods";
 import BACheckbox from "./BACheckbox";
+import * as XLSX from "xlsx";
 dayjs.extend(isSameOrBefore);
 
 type propsType = {
@@ -124,7 +125,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
   const [gridSearchObj, setGridSearchObj] = useState<any>({});
   const [selectedRows, setSelectedRows] = useState<any>([]);
   const [paginationConfig, setPaginationConfig] = useState({
-    pageSize: 10,
+    pageSize: 20,
     page: 1,
     totalRecords: 0,
   });
@@ -342,8 +343,117 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
   };
 
   const exportToExcel = (controller?: string) => {
-    const url = `${instance.defaults.baseURL}${controller}/export?type=xlsx&Start=${dateRange?.[0]}&End=${dateRange?.[1]}`
-    window.open(url, '_blank');
+    setPrintLoader(true);
+    
+    // Prepare search parameters with current filters
+    const updatedSearchObj = Object.fromEntries(
+      Object.entries(gridSearchObj).filter(([_, value]) => value !== undefined && value !== null)
+    );
+
+    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => ({
+      Key,
+      Value,
+      Type: Key === "FKDAT" ? "date" : "string",
+      Operator: Key === "FKDAT" ? "equal" : "like"
+    }));
+
+    // Add date range to searchBy if date range picker is enabled and dates are selected
+    if (dateRange && showDateRangePicker && dateRange[0] && dateRange[1]) {
+      const startDate = dayjs(dateRange[0]).format("YYYY-MM-DD");
+      const endDate = dayjs(dateRange[1]).format("YYYY-MM-DD");
+
+      searchBy.push({
+        Key: "FKDAT",
+        Value: JSON.stringify([startDate, endDate]),
+        Type: "date",
+        Operator: "between"
+      });
+    }
+
+    // Fetch all data for export
+    GeneralCoreService(`${controller}`)
+      .Register({
+        pageNo: 1,
+        pageSize: Number.MAX_SAFE_INTEGER,
+        searchBy: JSON.stringify(searchBy),
+        ...extraParams,
+        ...searchParams ? { ...searchParams } : {},
+      })
+      .then((res: any) => {
+        if (res?.Data?.List && res.Data.List.length > 0) {
+          // Prepare the data for export
+          const exportData = res.Data.List.map((row: any) => {
+            const exportRow: any = {};
+            
+            // Add data from all columns
+            colsWithoutCheckbox.forEach((col: any) => {
+              if (col.key) {
+                let value = row[col.key];
+                
+                // Format the value based on column type
+                if (col.type === "date" && value) {
+                  value = formatDateDMY(value);
+                } else if (col.type === "number" && value) {
+                  value = formattedNumber(value);
+                } else if (col.type === "status") {
+                  value = value ? "Active" : "Inactive";
+                } else if (col.type === "boolean") {
+                  value = value ? "Yes" : "No";
+                } else if (col.type === "tag" && value) {
+                  value = value.toUpperCase();
+                }
+                
+                exportRow[col.label] = value;
+              }
+            });
+            
+            // Add conditional columns if they exist
+            if (conditionalColumns && conditionalColumns.length > 0) {
+              conditionalColumns.forEach((col: any) => {
+                exportRow[col.label] = col.displayField ? col.displayField(row) : row[col.key];
+              });
+            }
+            
+            return exportRow;
+          });
+
+          // Create workbook and worksheet
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.json_to_sheet(exportData);
+
+          // Set column widths
+          const colWidths = colsWithoutCheckbox.map((col: any) => ({
+            wch: Math.max(col.label.length, 15)
+          }));
+          
+          if (conditionalColumns && conditionalColumns.length > 0) {
+            conditionalColumns.forEach((col: any) => {
+              colWidths.push({ wch: Math.max(col.label.length, 15) });
+            });
+          }
+          
+          ws['!cols'] = colWidths;
+
+          // Add worksheet to workbook
+          XLSX.utils.book_append_sheet(wb, ws, "Data");
+
+          // Generate filename with current date
+          const currentDate = dayjs().format("YYYY-MM-DD");
+          const filename = `${title || controller}_${currentDate}.xlsx`;
+
+          // Save the file
+          XLSX.writeFile(wb, filename);
+          
+          message.success(`Data exported successfully! ${exportData.length} records exported.`);
+        } else {
+          message.warning("No data found to export with current filters.");
+        }
+        setPrintLoader(false);
+      })
+      .catch(() => {
+        message.error("Failed to export data. Please try again.");
+        setPrintLoader(false);
+      });
   }
 
   const downloadSelectedRows = (row: any) => {

@@ -17,7 +17,7 @@ export default function BAPagination(props: propsType) {
   const { totalRecords, onPageChange, pageSize } = props;
   const [pageConfig, setPageConfig] = useState({
     current: 1,
-    pageSize: pageSize || 10,
+    pageSize: pageSize || 20,
   });
 
   const handlePageChange = (page: number, pageSize: number) => {
