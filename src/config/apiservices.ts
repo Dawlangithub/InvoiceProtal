@@ -1,6 +1,6 @@
 import { GeneralCoreService } from "./GeneralCoreService";
 
-export const UserService = GeneralCoreService('user')
+export const UserService = GeneralCoreService('users')
 export const RoleService = GeneralCoreService('role')
 export const SetupConfigService = GeneralCoreService('setup')
 export const LogsService = GeneralCoreService('Logs')

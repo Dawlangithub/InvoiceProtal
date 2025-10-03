@@ -1,74 +1,46 @@
 import { BABox, BAIconButton } from "../../components";
 import logo from "../../assets/einvoiceLogo.png"
 import { Navigate, Route, Routes, useNavigate } from "react-router";
-import User from "./security/user/user";
 import PageNotFound from "./pagenotfound";
 import {
   CaretRightOutlined,
   MenuOutlined,
-  ProductOutlined,
-  UserOutlined,
-  SecurityScanFilled,
-  SettingFilled,
   AppstoreFilled,
   ScanOutlined,
   IdcardOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import UserForm from "./security/user/userform";
 import { useEffect, useState } from "react";
-import MainDashboard from "./maindashboard";
-import { Drawer } from "antd";
-import Profile from "../profile";
-import Role from "./security/role/role";
-import RoleForm from "./security/role/roleform";
-import SetupConfig from "./setup/setupconfig/setupconfig";
-import SetupConfigForm from "./setup/setupconfig/setupconfigform";
+import { Drawer, Popconfirm } from "antd";
 import Invoice from "./transactions/invoice/invoice";
 import Logs from "./transactions/logs/logs";
-import LogsForm from "./transactions/logs/logsform";
+import { IoExitOutline } from "react-icons/io5";
+import profile from "../../assets/profile.png";
+import User from "./security/user/user";
+import UserForm from "./security/user/userform";
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['security', 'setup', 'transactions']);
-  const [user, setUser] = useState<any>({});
+  const [expandedSections, setExpandedSections] = useState<string[]>(['security', 'inquiry']);
 
   const menuSections = [
     {
       id: 'security',
       label: 'Security',
-      icon: <SecurityScanFilled style={{ fontSize: "1.0em" }} />,
+      icon: <AppstoreFilled style={{ fontSize: "1.0em" }} />,
       items: [
         {
           label: "User",
           route: "/user",
           icon: <UserOutlined style={{ fontSize: "1.0em" }} />,
         },
-        {
-          label: "Role",
-          route: "/role",
-          icon: <IdcardOutlined style={{ fontSize: "1.0em" }} />,
-        },
       ]
     },
     {
-      id: 'setup',
-      label: 'Setup',
-      icon: <SettingFilled style={{ fontSize: "1.0em" }} />,
-      items: [
-
-        {
-          label: "Setup Config",
-          route: "/setupconfig",
-          icon: <ProductOutlined style={{ fontSize: "1.0em" }} />,
-        },
-
-      ]
-    },
-    {
-      id: 'transactions',
-      label: 'Transactions',
+      id: 'inquiry',
+      label: 'Inquiry',
       icon: <AppstoreFilled style={{ fontSize: "1.0em" }} />,
       items: [
         {
@@ -84,30 +56,6 @@ export default function DashboardScreen() {
       ]
     },
   ];
-
-  // Derive role from stored user or explicit localStorage key; supports string or array/object forms
-  const userHasRole = (u: any, roleName: string): boolean => {
-    const target = roleName.toLowerCase();
-    const explicit = (localStorage.getItem('Role') || localStorage.getItem('Roles') || '').toLowerCase();
-    if (explicit && explicit === target) return true;
-
-    const singleRole = (u?.Role || u?.role || u?.RoleName || u?.roleName || '').toString().toLowerCase();
-    if (singleRole === target) return true;
-
-    const roles = u?.Roles || u?.roles || [];
-    if (Array.isArray(roles)) {
-      return roles.some((r: any) => {
-        if (typeof r === 'string') return r.toLowerCase() === target;
-        const name = (r?.Name || r?.name || r?.Role || r?.role || '').toString().toLowerCase();
-        return name === target;
-      });
-    }
-    return false;
-  };
-
-  const isAdmin = userHasRole(user, 'Admin');
-  const isUser = userHasRole(user, 'User') && !isAdmin;
-  const filteredSections = menuSections.filter((section) => !(isUser && section.id === 'setup') && !(isUser && section.id === 'security'));
 
   const activeMenu = (menu: string) => {
     return window.location.pathname.includes(menu);
@@ -179,12 +127,9 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     const token = localStorage.getItem("Token")
-    // if (!token) {
-    //   navigate("/login", { replace: true })
-    // }
-    let u: any = localStorage.getItem("User");
-    try { u = JSON.parse(u || "{}"); } catch { u = {}; }
-    setUser(u || {});
+    if (!token) {
+      navigate("/login", { replace: true })
+    }
 
     const storedOpen = localStorage.getItem("sidebarOpen");
     if (storedOpen !== null) {
@@ -208,7 +153,6 @@ export default function DashboardScreen() {
   return (
     <>
       <BABox>
-
         <BABox
           className={`grid grid-cols-1 md:grid-cols-12 transition-all duration-300 ease-in-out h-screen`}
         >
@@ -216,14 +160,28 @@ export default function DashboardScreen() {
             <BABox className="px-2 pt-4">
               <div className="flex justify-between items-center px-2">
                 <img src={logo} width={60} alt="EInvoice" className="object-contain" />
+                <Popconfirm
+                  title="Logout"
+                  description="Are you sure to logout?"
+                  onConfirm={() => {
+                    localStorage.removeItem("Token");
+                    localStorage.removeItem("Username");
+                    localStorage.removeItem("Email");
+                    navigate("/login", { replace: true });
+                  }}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <IoExitOutline style={{ fontSize: "1.5em", cursor: "pointer", color: "white" }} />
+                </Popconfirm>
               </div>
               <div className="mt-6 flex flex-col items-center text-center">
-                <img src={user.Image} alt="avatar" className="w-20 h-20 rounded-full object-cover" />
-                <div className="mt-3 text-white font-medium">{user?.Name?.toUpperCase() || 'User'}</div>
-                <div className="text-[12px] text-slate-400">{user?.Email || 'User@gmail.com'}</div>
+                <img src={profile} alt="avatar" className="w-20 h-20 rounded-full object-cover" />
+                <div className="mt-1 text-white font-medium">{localStorage.getItem("Username")?.toUpperCase() || 'Admin'}</div>
+                <div className="text-[12px] text-slate-400">{localStorage.getItem("Email") || 'admin@dawlance.com'}</div>
               </div>
               <div className="mt-10 space-y-1">
-                {filteredSections.map((section) => (
+                {menuSections.map((section) => (
                   <div key={section.id}>{renderSection(section)}</div>
                 ))}
               </div>
@@ -252,11 +210,10 @@ export default function DashboardScreen() {
             </Drawer>
 
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<MainDashboard />} />
-              <Route
-                path="/user"
-                element={<User />}
+              <Route path="/" element={<Navigate to="/invoice" replace />} />
+              <Route 
+                path="/user" 
+                element={<User />} 
               />
               <Route
                 path="/userform"
@@ -267,44 +224,12 @@ export default function DashboardScreen() {
                 element={<UserForm />}
               />
               <Route
-                path="/role"
-                element={<Role />}
-              />
-              <Route
-                path="/roleform"
-                element={<RoleForm />}
-              />
-              <Route
-                path="/roleform/:id"
-                element={<RoleForm />}
-              />
-              <Route
-                path="/setupconfig"
-                element={<SetupConfig />}
-              />
-              <Route
-                path="/setupconfigform"
-                element={<SetupConfigForm />}
-              />
-              <Route
-                path="/setupconfigform/:id"
-                element={<SetupConfigForm />}
-              />
-              <Route
                 path="/invoice"
                 element={<Invoice />}
               />
               <Route
                 path="/logs"
                 element={<Logs />}
-              />
-              <Route
-                path="/logsform"
-                element={<LogsForm />}
-              />
-              <Route
-                path="/profile"
-                element={<Profile />}
               />
               <Route path="*" element={<PageNotFound />} />
             </Routes>

@@ -1,10 +1,10 @@
 import { BASetupGrid } from "../../../../components";
-import { TransactionConfig } from "../../../../config/setupconfig";
+import { InvoiceConfig } from "../../../../config/setupconfig";
 
 export default function Invoice() {
     return (
         <>
-            <BASetupGrid cols={TransactionConfig} controller={"transaction"} title={"Invoice"} disableAdd={true} disableEdit={true} disableDelete={true} showDateRangePicker={true}/>
+            <BASetupGrid disableExport={true} cols={InvoiceConfig} controller={"invoices"} title={"Invoice"} disableAdd={true} disableEdit={true} disableDelete={true} showDateRangePicker={true}/>
         </>
     )
 }

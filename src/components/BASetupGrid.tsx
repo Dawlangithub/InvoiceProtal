@@ -13,17 +13,16 @@ import {
   CloseOutlined,
   CheckOutlined,
   FileExcelOutlined,
-  QrcodeOutlined,
-  SettingOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
+import { TbFileInvoice } from "react-icons/tb";
 import BABox from "./BABox";
 import BAButton from "./BAButton";
 import BAPagination from "./BAPagination";
 import BAModal from "./BAModal";
 import BAFormElement from "./BAFormElement";
 import { formElement } from "./BAComponentSwitcher";
-import { DatePicker, message, Popconfirm, QRCode } from "antd";
+import { DatePicker, message, Popconfirm } from "antd";
 import BALoader from "./BALoader";
 import BAinput from "./BAInput";
 import classNames from "classnames";
@@ -39,9 +38,7 @@ import BANumberInput from "./BANumberInput";
 import BAPera from "./BAPera";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { invoiceRunService, invoiceExecuteService } from "../config/apiservices";
 import { LuFilterX } from "react-icons/lu";
-import { IoMdDownload } from "react-icons/io";
 import instance from "../config/apimethods";
 import BACheckbox from "./BACheckbox";
 dayjs.extend(isSameOrBefore);
@@ -103,8 +100,8 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     conditionalColumns,
     modelGetter,
     rec_id,
-    sortColumn,
-    sortDirection,
+    // sortColumn,
+    // sortDirection,
     getByRequest,
     modelAlias,
     customButton,
@@ -116,7 +113,6 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     showDateRangePicker,
     disableExport,
   } = props;
-  console.log("🚀  ~ BASetupGrid.tsx ~ BASetupGrid ~ controller: ", controller);
   const [listData, setListData] = useState<any>([]);
   const [openModal, setOpenModal] = useState(false);
   const [model, setModel] = useState<any>({});
@@ -126,8 +122,6 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
   const [printLoader, setPrintLoader] = useState(false);
   const [loader, setLoader] = useState(false);
   const [gridSearchObj, setGridSearchObj] = useState<any>({});
-  const [infoModal, setInfoModal] = useState(false);
-  const [infoRow, setInfoRow] = useState<any>(null);
   const [selectedRows, setSelectedRows] = useState<any>([]);
   const [paginationConfig, setPaginationConfig] = useState({
     pageSize: 10,
@@ -196,33 +190,37 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       Object.entries(SearchObj ? SearchObj : gridSearchObj).filter(([_, value]) => value !== undefined && value !== null)
     );
 
-    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => ({ Key, Value }));
+    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => ({
+      Key,
+      Value,
+      Type: Key === "FKDAT" ? "date" : "string",
+      Operator: Key === "FKDAT" ? "equal" : "like"
+    }));
 
     const currentDateRange = updatedDateRange !== undefined ? updatedDateRange : dateRange;
 
-    const dateRangeParams =
-      currentDateRange && showDateRangePicker
-        ? {
-          Start: currentDateRange[0]
-            ? dayjs(currentDateRange[0]).format("YYYY-MM-DD")
-            : null,
-          End: currentDateRange[1]
-            ? dayjs(currentDateRange[1]).format("YYYY-MM-DD")
-            : null,
-        }
-        : {};
+    // Add date range to searchBy if date range picker is enabled and dates are selected
+    if (currentDateRange && showDateRangePicker && currentDateRange[0] && currentDateRange[1]) {
+      const startDate = dayjs(currentDateRange[0]).format("YYYY-MM-DD");
+      const endDate = dayjs(currentDateRange[1]).format("YYYY-MM-DD");
+
+      searchBy.push({
+        Key: "FKDAT",
+        Value: JSON.stringify([startDate, endDate]),
+        Type: "date",
+        Operator: "between"
+      });
+    }
 
     GeneralCoreService(`${controller}`)
       .Register(
         {
           pageNo: pgObj ? pgObj.page : paginationConfig.page,
           pageSize: pgObj ? pgObj.pageSize : paginationConfig.pageSize,
-          select: cols.map((col) => col.key).filter(Boolean).join(",") + ",id,createdAt",
           searchBy: JSON.stringify(searchBy),
-          order: JSON.stringify({ [sortColumn ? sortColumn : "createdAt"]: sortDirection || "DESC" }),
+          // order: JSON.stringify({ [sortColumn ? sortColumn : "createdAt"]: sortDirection || "DESC" }),
           ...extraParams,
           ...searchParams ? { ...searchParams } : {},
-          ...dateRangeParams,
         }
       )
       .then((res: any) => {
@@ -354,15 +352,6 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     window.open(url, '_blank');
   }
 
-  const executeSelectedRows = (row: any) => {
-    const invoiceNo = row.map((r: any) => r.InvoiceNo).join(",");
-    invoiceExecuteService.GetAll({ invoiceNo }).then((res: any) => {
-      message.success(res.Message);
-    }).catch((err: any) => {
-      message.error(err?.error);
-    });
-  }
-
   useEffect(() => {
     getData();
   }, []);
@@ -374,84 +363,6 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
   return (
     <>
       <BABackdropLoader loading={printLoader} />
-      <BAModal
-        width={400}
-        title={""}
-        open={infoModal}
-        close={setInfoModal}
-        content={
-          <>
-            {infoRow && (
-              <BABox>
-                {(() => {
-                  const toBool = (v: any) => v === true || v === 1 || String(v).toLowerCase() === "true";
-                  const isFbr = infoRow?.isFbr ?? toBool(infoRow?.FBR);
-                  const isProcessed = infoRow?.isProcessed ?? toBool(infoRow?.IsProcessed);
-                  return (
-                    <>
-                      {isFbr && isProcessed && (
-                        <>
-                          <BABox className="flex justify-center mb-2">
-                            <QRCode value={infoRow?.FBR_INV_NO} size={150} />
-                          </BABox>
-                          <BABox className="bg-gray-50 p-1 rounded mb-4 break-words">
-                            <BAPera className="text-xs text-center">{infoRow?.FBR_INV_NO}</BAPera>
-                          </BABox>
-                        </>
-                      )}
-                      {!isFbr && isProcessed && (
-                        <BABox className="bg-gray-50 p-1 rounded mb-4 mt-5 break-words">
-                          <BAPera className="text-xs">{infoRow?.VRError || infoRow?.PRError || "--"}</BAPera>
-                        </BABox>
-                      )}
-                    </>
-                  );
-                })()}
-                <BABox className="max-h-[300px] overflow-auto mt-3">
-                  {[
-                    { key: "InvoiceType", label: "Invoice Type" },
-                    { key: "InvoiceNo", label: "Invoice No" },
-                    { key: "InvoiceDate", label: "Invoice Date", type: "date" },
-                    { key: "BuyerBusinessName", label: "Buyer Business Name" },
-                    { key: "SellerProvince", label: "Seller Province" },
-                    { key: "SellerAddress", label: "Seller Address" },
-                    { key: "BuyerNTNCNIC", label: "Buyer NTN CNIC" },
-                    { key: "ScenarioID", label: "Scenario ID" },
-                    { key: "FBR", label: "FBR", type: "fbr" },
-                  ].map((field: any, idx: number) => {
-                    const value = infoRow?.[field.key];
-                    let displayValue: any = "--";
-                    if (field.type === "date") {
-                      displayValue = value ? formatDateDMY(value) : "--";
-                    } else if (field.type === "fbr") {
-                      const toBool = (v: any) => v === true || v === 1 || String(v).toLowerCase() === "true";
-                      const isFbr = toBool(infoRow?.["FBR"]);
-                      const isProcessed = toBool(infoRow?.["IsProcessed"]);
-                      let text = "--"; let cls = "bg-gray-100 text-gray-600";
-                      if (isProcessed && isFbr) { text = "Success"; cls = "bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"; }
-                      else if (isProcessed && !isFbr) { text = "Failed"; cls = "bg-red-100 text-red-700 hover:bg-red-600 hover:text-white"; }
-                      else { text = "Pending"; cls = "bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white"; }
-                      displayValue = (
-                        <span className={cls + " px-2 py-0.5 rounded-full text-xs"}>{text}</span>
-                      );
-                    } else if (value !== null && value !== undefined) {
-                      if (typeof value === "boolean") displayValue = value ? "Yes" : "No";
-                      else if (typeof value === "object") displayValue = JSON.stringify(value);
-                      else displayValue = String(value);
-                    }
-                    return (
-                      <BABox key={idx} className="flex justify-between items-start py-1">
-                        <BAPera className="text-gray-500 text-xs mr-2">{field.label}</BAPera>
-                        <BAPera className="text-sm text-right break-words">{displayValue}</BAPera>
-                      </BABox>
-                    );
-                  })}
-                </BABox>
-              </BABox>
-            )}
-          </>
-        }
-      />
       <BAModal
         width={600}
         title={title}
@@ -497,7 +408,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                 style={{
                   width: isMobile ? 200 : 220,
                   marginRight: isMobile ? 1 : 5,
-                  marginTop: isMobile ? 1 : 5,
+                  marginTop: isMobile ? 1 : 7,
                 }}
               />
             ),
@@ -520,24 +431,13 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
             isHide: disableExport,
           },
           {
-            displayField: () => selectedRows.length > 0 && controller === 'transaction' && (
+            displayField: () => selectedRows.length > 0 && controller === 'invoices' && (
               <BAButton
                 icon={<DownloadOutlined />}
                 onClick={() => {
                   downloadSelectedRows(selectedRows)
                 }}
                 label="Download"
-              />
-            )
-          },
-          {
-            displayField: () => selectedRows.length > 0 && controller === 'transaction/preview' && (
-              <BAButton
-                icon={<SettingOutlined />}
-                onClick={() => {
-                  executeSelectedRows(selectedRows)
-                }}
-                label="Execute"
               />
             )
           },
@@ -711,7 +611,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                               {!disableDelete && (<Popconfirm
                                 title="Delete the task"
                                 description="Are you sure to delete this task?"
-                                onConfirm={() => deleteRecord(row.Id)}
+                                onConfirm={() => deleteRecord(row.id)}
                                 okText="Yes"
                                 cancelText="No"
                               >
@@ -719,37 +619,14 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                 }} className="text-black hover:text-[#DB052C] m-1 text-lg hover:scale-125" />
                               </Popconfirm>
                               )}
-                              {controller === 'transaction' && (
-                                <div className="flex gap-1">
-                                  <BAIconButton onClick={() => {
-                                    setInfoRow(row);
-                                    setInfoModal(true);
-                                  }} icon={<QrcodeOutlined style={{ fontSize: '13px' }} />} />
-                                  <BAIconButton onClick={() => {
-                                    let ReportUrl = `${instance.defaults.baseURL}transaction/download?invoiceNo=${row.InvoiceNo}`;
+                              {controller === 'invoices' && (
+                                <div>
+                                  <BAIconButton toolTip="Print Invoice Pdf" onClick={() => {
+                                    let ReportUrl = `${instance.defaults.baseURL}/invoices/${row.ID}/print`;
                                     window.open(ReportUrl, '_blank');
-                                  }} icon={<IoMdDownload style={{ fontSize: '13px' }} />} />
+                                  }} icon={<TbFileInvoice style={{ fontSize: '16px' }} />} />
                                 </div>
                               )}
-                              {
-                                controller === 'setup' && (
-                                  <Popconfirm
-                                    title="Are you sure to run invoice?"
-                                    description=""
-                                    onConfirm={() => {
-                                      invoiceRunService.GetAll().then((res: any) => {
-                                        message.success(res.Message);
-                                      }).catch((err: any) => {
-                                        message.error(err?.error);
-                                      });
-                                    }}
-                                    okText="Yes"
-                                    cancelText="No"
-                                  >
-                                    <SettingOutlined className="text-black m-1 text-lg hover:scale-125" />
-                                  </Popconfirm>
-                                )
-                              }
                             </BABox>
                           </td>
                           {colsWithoutCheckbox.map((col: any, colIndex: number) => (
@@ -757,7 +634,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                               key={colIndex}
                               style={{ lineHeight: "0.8" }}
                               className={classNames(
-                                `p-3  whitespace-nowrap text-xs text-gray-900 relative ${col.className ? col.className : ""}`,
+                                `p-3 whitespace-nowrap text-xs text-gray-900 relative ${col.className ? col.className : ""}`,
                               )}
                             >
                               {col.displayField ? (
@@ -771,22 +648,23 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                   <span className="text-center block" >{formatDateDMY(row[col.key])}</span>
                                 ) : col.type === "checkbox" ? (
                                   null
-                                ) : (
+                                ) : col.type === "tag" ? (
                                   (() => {
-                                    const isFbrKey = String(col.key).toLowerCase() === "fbr";
-                                    if (isFbrKey) {
-                                      const toBool = (v: any) => v === true || v === 1 || String(v).toLowerCase() === "true";
-                                      const isFbr = toBool(row["FBR"]);
-                                      const isProcessed = toBool(row["IsProcessed"]);
-                                      let text = "--"; let cls = "bg-gray-100 text-gray-600";
-                                      if (isProcessed && isFbr) { text = "Success"; cls = "bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"; }
-                                      else if (isProcessed && !isFbr) { text = "Failed"; cls = "bg-red-100 text-red-700 hover:bg-red-600 hover:text-white"; }
-                                      else { text = "Pending"; cls = "bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white"; }
-                                      return (<span className={cls + " px-2 py-0.5 rounded-full text-xs"}>{text}</span>);
+                                    const status = row["TXTFIELD"];
+                                    let cls = "bg-blue-400 rounded-md text-white";
+
+                                    if (status === "Completed") {
+                                      cls = "bg-green-600 rounded-md text-white";
+                                    } else if (status === "Failed") {
+                                      cls = "bg-red-400 rounded-md text-white";
                                     }
-                                    return row[col.key];
+                                    return (
+                                      <span className={`${cls} px-2 py-0.5 rounded-full text-xs`}>
+                                        {status.toUpperCase()}
+                                      </span>
+                                    );
                                   })()
-                                )}
+                                ) : row[col.key]}
                             </td>
                           ))}
                           {conditionalColumns && conditionalColumns.length > 0

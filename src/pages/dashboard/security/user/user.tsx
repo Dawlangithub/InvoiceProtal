@@ -6,12 +6,12 @@ export default function User() {
     const navigate = useNavigate();
 
     const addEdit = (row: any) => {
-        navigate(`/userform/${row?.Id ? row.Id : ''}`)
+        navigate(`/userform/${row?.id ? row.id : ''}`)
     }
 
     return (
         <>
-            <BASetupGrid onAddEdit={addEdit} cols={UserConfig} controller={"User"} title={"User"} disableExport={true}/>
+            <BASetupGrid onAddEdit={addEdit} cols={UserConfig} controller={"users"} title={"User"} disableExport={true}/>
         </>
     )
 }

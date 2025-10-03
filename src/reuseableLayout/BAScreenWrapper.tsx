@@ -1,12 +1,9 @@
-import { Avatar } from "antd";
 import {
   BABox,
-  BAMenu,
   BAScreenHeader,
 } from "../components";
-import { LogoutOutlined, SettingFilled, UserOutlined, MenuOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { MenuOutlined } from "@ant-design/icons";
+import { useState } from "react";
 import logo from "../assets/einvoiceLogo.png";
 
 type propsType = {
@@ -31,30 +28,8 @@ export default function BAScreenWrapper(props: propsType) {
     extraTitle,
     list,
   } = props;
-  const [loggedInUser, setLoggedInUser] = useState<any>({});
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
-  const navigate = useNavigate();
-
-  const logout = async () => {
-    localStorage.clear()
-    navigate("/login", { replace: true });
-  };
-
-  useEffect(() => {
-    let user: any = localStorage.getItem("User");
-    user = JSON.parse(user || "{}");
-    if (user) {
-      setLoggedInUser({ ...user });
-    }
-    const stored = localStorage.getItem("sidebarOpen");
-    if (stored !== null) {
-      setSidebarOpen(stored === "true");
-    }
-    const onSidebarState = (e: any) => setSidebarOpen(!!e?.detail);
-    window.addEventListener("sidebar-open-changed", onSidebarState as any);
-    return () => window.removeEventListener("sidebar-open-changed", onSidebarState as any);
-  }, []);
-
+  console.log(setSidebarOpen);
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("sidebar-toggle"));
   };
@@ -68,39 +43,6 @@ export default function BAScreenWrapper(props: propsType) {
           </button>
           {!sidebarOpen && <img src={logo} width={80} alt="EInvoice" className="object-contain" />}
         </BABox>
-        <BAMenu
-          options={[
-            {
-              label: "Profile",
-              onClick: () => {
-                navigate("/profile");
-              },
-              icon: <UserOutlined />,
-            },
-            {
-              label: "Logout",
-              onClick: logout,
-              icon: <LogoutOutlined />,
-            },
-          ]}
-        >
-          <BABox className="flex items-center gap-2 cursor-pointer rounded-3xl mr-3 px-[10px] py-[6px] hover:bg-gray-100 transition-colors duration-200 bg-gray-100">
-            <Avatar
-              style={{
-                backgroundColor: "#242b64",
-                color: "white",
-                fontWeight: "600",
-                fontSize: "12px",
-              }}
-              size={25}
-            >
-              {(loggedInUser.Name || loggedInUser.Email || "U")
-                ?.charAt(0)
-                ?.toUpperCase()}
-            </Avatar>
-            <SettingFilled className="textPrimary text-lg" />
-          </BABox>
-        </BAMenu>
       </BABox>}
       <BABox className="px-5 py-3">
         {!hideHeader && (

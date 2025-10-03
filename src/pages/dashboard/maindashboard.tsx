@@ -5,21 +5,19 @@ dayjs.extend(isSameOrBefore);
 import { BABox, } from "../../components";
 import BAScreenWrapper from "../../reuseableLayout/BAScreenWrapper";
 import { Avatar, Button, message } from "antd";
-import { SettingOutlined, UserOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router";
+import { SettingOutlined } from "@ant-design/icons";
 import { Get } from "../../config/apimethods";
 import NumberFlow from '@number-flow/react'
 import { invoiceRunService } from "../../config/apiservices";
 
 export default function MainDashboard() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<any>({});
   const [success, setSuccess] = useState(0);
   const [failed, setFailed] = useState(0);
   const [pending, setPending] = useState(0);
   const [users, setUsers] = useState(0);
   const [executeLoading, setExecuteLoading] = useState(false);
-
+  
   const getDashboardData = () => {
     const params = (value: string) => ({
       pageNo: 1,
@@ -83,14 +81,6 @@ export default function MainDashboard() {
         </BABox>
 
         <BABox className="flex items-center gap-3">
-          <Button
-            type="primary"
-            icon={<UserOutlined />}
-            onClick={() => navigate("/profile")}
-            style={{ borderRadius: 9999 }}
-          >
-            Profile
-          </Button>
           {
             user?.IsExcute && (
               <Button

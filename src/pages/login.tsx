@@ -20,13 +20,12 @@ export default function Login() {
   const loginUser = (e: any) => {
     e.preventDefault();
     setLoading(true);
-    Post("/authentication/login", model, null, null, true)
+    Post("/auth/login", model, null, null, true)
       .then((res: any) => {
-        localStorage.setItem("Token", res.Data.Token);
-        localStorage.setItem("RefreshToken", res.Data.RefreshToken);
-        localStorage.setItem("User", JSON.stringify(res.Data.User));
-        localStorage.setItem("ExpireAct", JSON.stringify(res.Data.ExpireAct));
-        navigate("/", { replace: true });
+        localStorage.setItem("Token", res.Data.access_token);
+        localStorage.setItem("Username", res.Data.username);
+        localStorage.setItem("Email", res.Data.email);
+        navigate("/invoice", { replace: true });
       })
       .catch((error: any) => {
         setError(error.Message);
@@ -39,7 +38,7 @@ export default function Login() {
   useEffect(() => {
     const token = localStorage.getItem("Token");
     if (token) {
-      navigate("/dashboard", { replace: true });
+      navigate("/invoice", { replace: true });
     }
   }, []);
 
@@ -104,21 +103,21 @@ export default function Login() {
               <BABox className="">
                 <BAinput
                   validationType="email"
-                  isValidate={model.Email}
-                  value={model.Email}
+                  isValidate={model.email}
+                  value={model.email}
                   variant="outlined"
                   onChange={(e: any) =>
-                    setModel({ ...model, Email: e.target.value })
+                    setModel({ ...model, email: e.target.value })
                   }
                   label={"Email"}
                 />
               </BABox>
               <BABox className="py-2">
                 <BAPasswordInput
-                  value={model.Password}
+                  value={model.password}
                   variant="outlined"
                   onChange={(e: any) =>
-                    setModel({ ...model, Password: e.target.value })
+                    setModel({ ...model, password: e.target.value })
                   }
                   label={"Password"}
                 />
