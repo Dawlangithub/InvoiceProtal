@@ -30,7 +30,7 @@ import { GeneralCoreService } from "../config/GeneralCoreService";
 import nodata from "../assets/nodatafound.png";
 import BAScreenWrapper from "../reuseableLayout/BAScreenWrapper";
 import { primary } from "../config/theme/variable";
-import { formatDateDMY, formattedNumber } from "../config/helpers";
+import { formatDateDMY, formattedDateTime, formattedNumber } from "../config/helpers";
 import BASelect from "./BASelect";
 import BABackdropLoader from "./BABackdropLoader";
 import BADate from "./BADate";
@@ -191,12 +191,23 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       Object.entries(SearchObj ? SearchObj : gridSearchObj).filter(([_, value]) => value !== undefined && value !== null)
     );
 
-    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => ({
-      Key,
-      Value,
-      Type: Key === "FKDAT" ? "date" : "string",
-      Operator: Key === "FKDAT" ? "equal" : "like"
-    }));
+    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => {
+      if (Key === "LogDateTime" && Value && typeof Value === 'string') {
+        const dateValue = dayjs(Value).format("YYYY-MM-DD");
+        return {
+          Key,
+          Value: JSON.stringify([dateValue, dateValue]),
+          Type: "date",
+          Operator: "between"
+        };
+      }
+      return {
+        Key,
+        Value,
+        Type: Key === "FKDAT" ? "date" : "string",
+        Operator: Key === "FKDAT" ? "equal" : "like"
+      };
+    });
 
     const currentDateRange = updatedDateRange !== undefined ? updatedDateRange : dateRange;
 
@@ -344,18 +355,29 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
 
   const exportToExcel = (controller?: string) => {
     setPrintLoader(true);
-    
+
     // Prepare search parameters with current filters
     const updatedSearchObj = Object.fromEntries(
       Object.entries(gridSearchObj).filter(([_, value]) => value !== undefined && value !== null)
     );
 
-    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => ({
-      Key,
-      Value,
-      Type: Key === "FKDAT" ? "date" : "string",
-      Operator: Key === "FKDAT" ? "equal" : "like"
-    }));
+    const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => {
+      if (Key === "LogDateTime" && Value && typeof Value === 'string') {
+        const dateValue = dayjs(Value).format("YYYY-MM-DD");
+        return {
+          Key,
+          Value: JSON.stringify([dateValue, dateValue]),
+          Type: "date",
+          Operator: "between"
+        };
+      }
+      return {
+        Key,
+        Value,
+        Type: Key === "FKDAT" ? "date" : "string",
+        Operator: Key === "FKDAT" ? "equal" : "like"
+      };
+    });
 
     // Add date range to searchBy if date range picker is enabled and dates are selected
     if (dateRange && showDateRangePicker && dateRange[0] && dateRange[1]) {
@@ -384,12 +406,12 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
           // Prepare the data for export
           const exportData = res.Data.List.map((row: any) => {
             const exportRow: any = {};
-            
+
             // Add data from all columns
             colsWithoutCheckbox.forEach((col: any) => {
               if (col.key) {
                 let value = row[col.key];
-                
+
                 // Format the value based on column type
                 if (col.type === "date" && value) {
                   value = formatDateDMY(value);
@@ -402,18 +424,18 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                 } else if (col.type === "tag" && value) {
                   value = value.toUpperCase();
                 }
-                
+
                 exportRow[col.label] = value;
               }
             });
-            
+
             // Add conditional columns if they exist
             if (conditionalColumns && conditionalColumns.length > 0) {
               conditionalColumns.forEach((col: any) => {
                 exportRow[col.label] = col.displayField ? col.displayField(row) : row[col.key];
               });
             }
-            
+
             return exportRow;
           });
 
@@ -425,13 +447,13 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
           const colWidths = colsWithoutCheckbox.map((col: any) => ({
             wch: Math.max(col.label.length, 15)
           }));
-          
+
           if (conditionalColumns && conditionalColumns.length > 0) {
             conditionalColumns.forEach((col: any) => {
               colWidths.push({ wch: Math.max(col.label.length, 15) });
             });
           }
-          
+
           ws['!cols'] = colWidths;
 
           // Add worksheet to workbook
@@ -443,7 +465,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
 
           // Save the file
           XLSX.writeFile(wb, filename);
-          
+
           message.success(`Data exported successfully! ${exportData.length} records exported.`);
         } else {
           message.warning("No data found to export with current filters.");
@@ -662,20 +684,18 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                   getData(null, { ...obj });
                                 }} label={""} />}
                               </>
-                              : col.type === "number" ? <BANumberInput
-                                onKeyDown={(event: any) => {
-                                  if (event.key === "Enter") {
-                                    getData();
-                                  }
-                                }}
-                                value={gridSearchObj[col.key]}
-                                onChange={(ev: any) => {
-                                  gridSearchObj[col.key] = ev.target.value;
-                                  setGridSearchObj({ ...gridSearchObj });
-                                }}
-                                label={""}
-                              /> :
-                                <BAinput
+                              : col.type === "datetime" ?
+                                <>
+                                  {!col.hideFilter && <BADate onChange={(e: any) => {
+                                    const formatted = formatDateDMY(e);
+                                    gridSearchObj[col.key] = formatted;
+                                    setGridSearchObj({ ...gridSearchObj });
+                                    let obj = { ...gridSearchObj }
+                                    obj[col.key] = formatted;
+                                    getData(null, { ...obj });
+                                  }} label={""} />}
+                                </>
+                                : col.type === "number" ? <BANumberInput
                                   onKeyDown={(event: any) => {
                                     if (event.key === "Enter") {
                                       getData();
@@ -687,7 +707,20 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                     setGridSearchObj({ ...gridSearchObj });
                                   }}
                                   label={""}
-                                />}
+                                /> :
+                                  <BAinput
+                                    onKeyDown={(event: any) => {
+                                      if (event.key === "Enter") {
+                                        getData();
+                                      }
+                                    }}
+                                    value={gridSearchObj[col.key]}
+                                    onChange={(ev: any) => {
+                                      gridSearchObj[col.key] = ev.target.value;
+                                      setGridSearchObj({ ...gridSearchObj });
+                                    }}
+                                    label={""}
+                                  />}
                         </td>
                       ))}
                     </tr>
@@ -756,7 +789,11 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                               )
                                 : col.type === "date" ? (
                                   <span className="text-center block" >{formatDateDMY(row[col.key])}</span>
-                                ) : col.type === "checkbox" ? (
+                                )
+                                : col.type === "datetime" ? (
+                                  <span className="text-center block" >{formattedDateTime(row[col.key])}</span>
+                                )
+                                : col.type === "checkbox" ? (
                                   null
                                 ) : col.type === "tag" ? (
                                   (() => {
@@ -831,6 +868,10 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                   ) : col.type === "date" ? (
                                     <span className="block">
                                       {formatDateDMY(row[col.key])}
+                                    </span>
+                                  ) : col.type === "datetime" ? (
+                                    <span className="block">
+                                      {formattedDateTime(row[col.key])}
                                     </span>
                                   ) : (
                                     (() => {

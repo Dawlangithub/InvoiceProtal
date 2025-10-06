@@ -1,6 +1,7 @@
 import { message } from "antd";
 import { formElement } from "../components/BAComponentSwitcher";
 const encryptionKey = `ESync_2025-FBR-Portal`;
+import dayjs from "dayjs";
 
 
 export const formattedNumber = (numString: any) => {
@@ -12,6 +13,9 @@ export const formattedNumber = (numString: any) => {
 
 export const formattedDate = (dateString: any) => {
   return dateString ? new Date(dateString).toLocaleDateString() : 0;
+}
+export const formattedDateTime = (dateString: any) => {
+  return dayjs(dateString).subtract(5, "hour").format("DD-MM-YYYY - HH:mm A");
 }
 
 export const goBack = () => {

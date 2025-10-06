@@ -51,6 +51,6 @@ export const LogsConfig = [
     CreateConfig('TXTFIELD', true, true, "Status", "tag"),
     CreateConfig('FNS_Status', true, true, "StatusCode", "text"),
     CreateConfig('LogStatus', true, true, "LogStatus", "text"),
-    CreateConfig('LogDateTime', true, true, "Log Date", "date"),
+    CreateConfig('LogDateTime', true, true, "Log DateTime", "datetime"),
     CreateConfig('MSGTXT', true, true, "LogMessage", "text"),
 ]
