@@ -28,7 +28,7 @@ export default function Login() {
         navigate("/invoice", { replace: true });
       })
       .catch((error: any) => {
-        setError(error.Message);
+        setError(error.message);
       })
       .finally(() => {
         setLoading(false);
@@ -92,7 +92,7 @@ export default function Login() {
 
             {error && (
               <div className="bg-red-50 text-red-600 border border-red-200 rounded-md p-3 mb-4 text-sm relative">
-                <div>{error} Please Enter Correct Credentials</div>
+                <div>Please Enter Correct Credentials</div>
                 <div className="absolute top-2 right-2 text-xs cursor-pointer">
                   <CloseOutlined onClick={() => setError("")} />
                 </div>

@@ -16,7 +16,7 @@ type propsType = {
 export default function BAPagination(props: propsType) {
   const { totalRecords, onPageChange, pageSize } = props;
   const [pageConfig, setPageConfig] = useState({
-    current: 1,
+    current: pageSize,
     pageSize: pageSize || 20,
   });
 
@@ -75,7 +75,7 @@ export default function BAPagination(props: propsType) {
             <Pagination
               defaultCurrent={1}
               total={totalRecords}
-              // pageSize={pageConfig.pageSize}
+              pageSize={pageConfig.pageSize}
               onChange={handlePageChange}
               showSizeChanger={false}
             />

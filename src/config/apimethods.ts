@@ -13,11 +13,16 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
     (config) => {
+      const cfg: any = config as any;
+      // Allow public calls (e.g., login) to bypass auth/expiry handling
+      if (cfg?.skipAuth) {
+        return config;
+      }
       const token = localStorage.getItem('Token');
-  
+
       const raw = JSON.parse(localStorage.getItem('ExpireAct') || '0');
       let expireAtSec = 0;
-  
+
       if (raw) {
         const asNumber = Number(raw);
         if (!Number.isNaN(asNumber) && asNumber > 0) {
@@ -31,19 +36,19 @@ instance.interceptors.request.use(
           }
         }
       }
-  
+
       const nowSecUtc = Math.floor(Date.now() / 1000); // UTC-based epoch seconds
-  
+
       if (expireAtSec && expireAtSec < nowSecUtc) {
         localStorage.clear();
         message.error('Session Expired');
         window.location.replace('/login');
         return Promise.reject(new Error('Session expired'));
       }
-  
+
       if (token) {
         config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
+        (config.headers as any).Authorization = `Bearer ${token}`;
       }
       return config;
     },
@@ -53,11 +58,12 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            localStorage.clear()
-            window.location.replace('/login')
+        const cfg: any = error?.config || {};
+        if (error.response?.status === 401 && !cfg?.skipAuthRedirect) {
+            localStorage.clear();
+            window.location.replace('/login');
         }
-        return Promise.reject(error)
+        return Promise.reject(error);
     }
 )
 
@@ -121,8 +127,11 @@ export const Get = (endPoint: string, id?: any, params?: any) => {
 export const Post = (endPoint: string, body: any, id?: any, params?: any, publicAPI?: boolean) => {
     return new Promise((resolve, reject) => {
         instance.post(`${endPoint}/${id ? id : ''}`, body, {
-            params: params
-        }).then(res => {
+            params: params,
+            // Flags used by interceptors to avoid redirects for public endpoints like login
+            skipAuth: publicAPI === true,
+            skipAuthRedirect: publicAPI === true
+        } as any).then(res => {
             if (res.data.Success) {
                 resolve(res.data)
             } else {

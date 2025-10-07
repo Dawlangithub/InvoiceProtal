@@ -10,6 +10,9 @@ const CreateConfig = (
     displayField?: any,
     filterEnums?: { value: any, label: string, key: string }[],
     hideFilter?: boolean,
+    className?: string,
+    truncate?: boolean,
+    truncateWidth?: number,
 ) => {
     return {
         key,
@@ -23,6 +26,9 @@ const CreateConfig = (
         displayField: displayField,
         filterEnums: filterEnums,
         hideFilter: hideFilter,
+        className,
+        truncate,
+        truncateWidth,
     }
 }
 
@@ -33,24 +39,27 @@ export const UserConfig = [
 ]
 
 export const InvoiceConfig = [
-    CreateConfig('BUKRS', true, true, "Company", "text"),
-    CreateConfig('VBELN', true, true, "Invoice No", "text"),
-    CreateConfig('FKDAT', true, true, "Invoice Date", "date"),
-    CreateConfig('KunrgName1', true, true, "Customer", "text"),
-    CreateConfig('STCD1', true, true, "CNIC", "text"),
-    CreateConfig('STCD2', true, true, "NTN", "text"),
+    CreateConfig('Company', true, true, "Company", "text"),
+    CreateConfig('InvoiceNo', true, true, "Invoice No", "text"),
+    CreateConfig('InvoiceDate', true, true, "Invoice Date", "date"),
+    CreateConfig('CustomerCode', true, true, "Customer Code", "text"),
+    CreateConfig('CustomerName', true, true, "Customer", "text"),
+    CreateConfig('CNIC', true, true, "CNIC", "text"),
+    CreateConfig('NTN', true, true, "NTN", "text"),
+    CreateConfig('Province', true, true, "Province", "text"),
+    CreateConfig('Status', true, true, "Status", "tag"),
+    CreateConfig('FBRPostDate', true, true, "FBR Post Date", "datetime"),
 ]
 
 export const LogsConfig = [
-    CreateConfig('BUKRS', true, true, "Company", "text"),
-    CreateConfig('VBELN', true, true, "Invoice No", "text"),
-    CreateConfig('FKDAT', true, true, "Invoice Date", "date"),
-    CreateConfig('KunrgName1', true, true, "Customer", "text"),
-    CreateConfig('STCD1', true, true, "CNIC", "text"),
-    CreateConfig('STCD2', true, true, "NTN", "text"),
-    CreateConfig('TXTFIELD', true, true, "Status", "tag"),
-    CreateConfig('FNS_Status', true, true, "StatusCode", "text"),
-    CreateConfig('LogStatus', true, true, "LogStatus", "text"),
+    CreateConfig('Company', true, true, "Company", "text"),
+    CreateConfig('InvoiceNo', true, true, "Invoice No", "text"),
+    CreateConfig('InvoiceDate', true, true, "Invoice Date", "date"),
+    CreateConfig('Customer', true, true, "Customer", "text"),
+    CreateConfig('CNIC', true, true, "CNIC", "text"),
+    CreateConfig('NTN', true, true, "NTN", "text"),
+    CreateConfig('Status', true, true, "Status", "tag"),
     CreateConfig('LogDateTime', true, true, "Log DateTime", "datetime"),
-    CreateConfig('MSGTXT', true, true, "LogMessage", "text"),
+    CreateConfig('HaballMsg', true, true, "LogMessage", "text", undefined, undefined, undefined, undefined, undefined, undefined, 'max-w-[240px]', true, 240),
+    CreateConfig('FBRMsg', true, true, "FBR Message", "text", undefined, undefined, undefined, undefined, undefined, undefined, 'max-w-[240px]', true, 240),
 ]

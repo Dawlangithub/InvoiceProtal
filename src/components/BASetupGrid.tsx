@@ -22,7 +22,7 @@ import BAPagination from "./BAPagination";
 import BAModal from "./BAModal";
 import BAFormElement from "./BAFormElement";
 import { formElement } from "./BAComponentSwitcher";
-import { DatePicker, message, Popconfirm } from "antd";
+import { DatePicker, message, Popconfirm, Tooltip } from "antd";
 import BALoader from "./BALoader";
 import BAinput from "./BAInput";
 import classNames from "classnames";
@@ -192,7 +192,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     );
 
     const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => {
-      if (Key === "LogDateTime" && Value && typeof Value === 'string') {
+      if ((Key === "LogDateTime" || Key === "FBRPostDate") && Value && typeof Value === 'string') {
         const dateValue = dayjs(Value).format("YYYY-MM-DD");
         return {
           Key,
@@ -204,8 +204,8 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       return {
         Key,
         Value,
-        Type: Key === "FKDAT" ? "date" : "string",
-        Operator: Key === "FKDAT" ? "equal" : "like"
+        Type: Key === "InvoiceDate" ? "date" : "string",
+        Operator: Key === "InvoiceDate" ? "equal" : "like"
       };
     });
 
@@ -217,7 +217,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       const endDate = dayjs(currentDateRange[1]).format("YYYY-MM-DD");
 
       searchBy.push({
-        Key: "FKDAT",
+        Key: "InvoiceDate",
         Value: JSON.stringify([startDate, endDate]),
         Type: "date",
         Operator: "between"
@@ -362,7 +362,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
     );
 
     const searchBy = Object.entries({ ...updatedSearchObj, ...extraParams }).map(([Key, Value]) => {
-      if (Key === "LogDateTime" && Value && typeof Value === 'string') {
+      if ((Key === "LogDateTime" || Key === "FBRPostDate") && Value && typeof Value === 'string') {
         const dateValue = dayjs(Value).format("YYYY-MM-DD");
         return {
           Key,
@@ -374,8 +374,8 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       return {
         Key,
         Value,
-        Type: Key === "FKDAT" ? "date" : "string",
-        Operator: Key === "FKDAT" ? "equal" : "like"
+        Type: Key === "InvoiceDate" ? "date" : "string",
+        Operator: Key === "InvoiceDate" ? "equal" : "like"
       };
     });
 
@@ -385,7 +385,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
       const endDate = dayjs(dateRange[1]).format("YYYY-MM-DD");
 
       searchBy.push({
-        Key: "FKDAT",
+        Key: "InvoiceDate",
         Value: JSON.stringify([startDate, endDate]),
         Type: "date",
         Operator: "between"
@@ -775,7 +775,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                           {colsWithoutCheckbox.map((col: any, colIndex: number) => (
                             <td
                               key={colIndex}
-                              style={{ lineHeight: "0.8" }}
+                              style={{ lineHeight: "0.8", minWidth: 0 }}
                               className={classNames(
                                 `p-3 whitespace-nowrap text-xs text-gray-900 relative ${col.className ? col.className : ""}`,
                               )}
@@ -797,7 +797,7 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                   null
                                 ) : col.type === "tag" ? (
                                   (() => {
-                                    const status = row["TXTFIELD"];
+                                    const status = row["Status"];
                                     let cls = "bg-blue-400 rounded-md text-white";
 
                                     if (status === "Completed") {
@@ -807,11 +807,34 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                     }
                                     return (
                                       <span className={`${cls} px-2 py-0.5 rounded-full text-xs`}>
-                                        {status.toUpperCase()}
+                                        {status?.toUpperCase()}
                                       </span>
                                     );
                                   })()
-                                ) : row[col.key]}
+                                ) : (
+                                  (() => {
+                                    const value = row[col.key];
+                                    if (col.truncate && (typeof value === 'string' || typeof value === 'number')) {
+                                      const widthPx = col.truncateWidth ? `${col.truncateWidth}px` : '200px';
+                                      const tooltipContent = (
+                                        <div style={{ maxWidth: 260, fontSize: 12, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                                          {String(value)}
+                                        </div>
+                                      );
+                                      return (
+                                        <Tooltip placement="topLeft" mouseEnterDelay={0.2} title={tooltipContent} overlayStyle={{ maxWidth: 280 }}>
+                                          <span
+                                            style={{ width: widthPx, display: 'block', padding: 3 }}
+                                            className="overflow-hidden text-ellipsis whitespace-nowrap align-middle"
+                                          >
+                                            {String(value)}
+                                          </span>
+                                        </Tooltip>
+                                      );
+                                    }
+                                    return value;
+                                  })()
+                                )}
                             </td>
                           ))}
                           {conditionalColumns && conditionalColumns.length > 0
