@@ -49,6 +49,7 @@ export const InvoiceConfig = [
     CreateConfig('Province', true, true, "Province", "text"),
     CreateConfig('Status', true, true, "Status", "tag"),
     CreateConfig('FBRPostDate', true, true, "FBR Post Date", "datetime"),
+    CreateConfig('FBRNo', true, true, "FBR No", "text"),
 ]
 
 export const LogsConfig = [
