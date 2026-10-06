@@ -8,6 +8,7 @@ const instance = axios.create({
     // baseURL: `http://pafwebapi.finosys-sbs.com/api/`,
     // baseURL: `http://192.168.19.21:3100/api`,
     baseURL: `http://10.92.0.30:3100/api`,
+    // baseURL: `http://localhost:3100/api`,
 });
 
 

@@ -13,6 +13,7 @@ const CreateConfig = (
     className?: string,
     truncate?: boolean,
     truncateWidth?: number,
+    maxChars?: number,
 ) => {
     return {
         key,
@@ -29,6 +30,7 @@ const CreateConfig = (
         className,
         truncate,
         truncateWidth,
+        maxChars,
     }
 }
 
@@ -59,7 +61,7 @@ export const LogsConfig = [
     CreateConfig('Customer', true, true, "Customer", "text"),
     CreateConfig('CNIC', true, true, "CNIC", "text"),
     CreateConfig('NTN', true, true, "NTN", "text"),
-    CreateConfig('Status', true, true, "Status", "tag"),
+    CreateConfig('Status', true, true, "Status", "tag", undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 10),
     CreateConfig('LogDateTime', true, true, "Log DateTime", "datetime"),
     CreateConfig('HaballMsg', true, true, "LogMessage", "text", undefined, undefined, undefined, undefined, undefined, undefined, 'max-w-[240px]', true, 240),
     CreateConfig('FBRMsg', true, true, "FBR Message", "text", undefined, undefined, undefined, undefined, undefined, undefined, 'max-w-[240px]', true, 240),

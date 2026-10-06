@@ -805,11 +805,14 @@ export default forwardRef(function BASetupGrid(props: propsType, ref: any) {
                                     } else if (status === "Failed") {
                                       cls = "bg-red-400 rounded-md text-white";
                                     }
-                                    return (
+                                    const fullText = status?.toUpperCase() ?? "";
+                                    const isTruncated = !!col.maxChars && fullText.length > col.maxChars;
+                                    const badge = (
                                       <span className={`${cls} px-2 py-0.5 rounded-full text-xs`}>
-                                        {status?.toUpperCase()}
+                                        {isTruncated ? `${fullText.slice(0, col.maxChars)}…` : fullText}
                                       </span>
                                     );
+                                    return isTruncated ? <Tooltip title={fullText}>{badge}</Tooltip> : badge;
                                   })()
                                 ) : (
                                   (() => {
